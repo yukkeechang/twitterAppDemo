@@ -25,9 +25,10 @@ class TwitterHomeViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.dataSource = self
          let refreshControl = UIRefreshControl()
          refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
-         tableView.insertSubview(refreshControl, at: 0)
         
-        sharedInstance()
+        tableView.insertSubview(refreshControl, at: 0)
+        
+//        sharedInstance()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -40,14 +41,18 @@ class TwitterHomeViewController: UIViewController, UITableViewDelegate, UITableV
         TwitterClient.sharedInstance.homeTimeLine(success: { ( tweets : [Tweet]) in
             self.tweets = tweets
             self.tableView.reloadData()
+            print("RELOADING DATA")
             
-        }, failure: { (error) in })
+        }, failure: { (error) in
+            print(error.localizedDescription)
+        })
     }
     
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
         TwitterClient.sharedInstance.homeTimeLine(success: { (tweets: [Tweet]) -> () in
             self.tweets = tweets
             self.tableView.reloadData()
+            print("REFRESH CONTROL")
             refreshControl.endRefreshing()
         }, failure: { (error: Error) -> () in
             print(error.localizedDescription)
@@ -68,6 +73,8 @@ class TwitterHomeViewController: UIViewController, UITableViewDelegate, UITableV
         cell.indexpath = indexPath
         cell.timestampLabel.text =  DateFormatter.timeSince(from: (tweet?.timestamp)!)
         cell.usernameLabel.text = tweet?.username
+        print("TWEET: \(tweet!)")
+        print("USERNAME: \(tweet?.username)")
         cell.profPicImageView.setImageWith((tweet?.imgUrl)!)
         cell.tweetTextLabel.text = tweet?.text
         cell.handleLabel.text = tweet?.handle

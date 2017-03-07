@@ -67,14 +67,21 @@ class TwitterClient: BDBOAuth1SessionManager {
     func login(success : @escaping () -> (), failure: @escaping(Error) -> ()) {
         loginSuccess = success
         loginFailure = failure
-        TwitterClient.sharedInstance.deauthorize()
-        TwitterClient.sharedInstance.fetchRequestToken(withPath: "oauth/request_token",    method: "GET",
-                                                        callbackURL: URL(string: "Twitter-client://oauth"),
-                                                        scope: nil,
-                                                        success: {(requestToken) in
-                                                            let url = URL(string: "https://api.twitter.com/oauth/authorize? oauth_token=\(requestToken?.token)!)")
-                                                            UIApplication.shared.open(url!)},
-                                                        failure: {(error) in })}
+        deauthorize()
+        fetchRequestToken(withPath: "oauth/request_token",
+                          method: "GET",
+                          callbackURL: URL(string: "Twitter-client://oauth"),
+                          scope: nil,
+                          success: { (requestToken: BDBOAuth1Credential?) in
+                            if let token = requestToken?.token {
+                                let url = URL(string: "https://api.twitter.com/oauth/authorize?oauth_token=\(token)")!
+                                UIApplication.shared.open(url)
+                            }
+        }) { (error: Error?) in
+            print("ERROR: \(error?.localizedDescription)")
+        }
+    }
+    
     func logout() {
         deauthorize()
         User.currentUser = nil
